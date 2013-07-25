@@ -14,7 +14,7 @@ bool message_init(message_t *message, dir_t direction, int id)
 	message->file_mode = NULL;
 	message->file_status = NULL;
 	
-	sprintf(buffer, "/root/mode%d", id);
+	sprintf(buffer, "%smode%d", MQ_PATH, id);
 	message->file_mode = malloc((strlen(buffer) + 1) * sizeof(char));
 	
 	if (message->file_mode == NULL)
@@ -25,7 +25,7 @@ bool message_init(message_t *message, dir_t direction, int id)
 	
 	strcpy(message->file_mode, buffer);
 	
-	sprintf(buffer, "/root/status%d", id);
+	sprintf(buffer, "%sstatus%d", MQ_PATH, id);
 	message->file_status = malloc((strlen(buffer) + 1) * sizeof(char));
 	
 	if (message->file_status == NULL)
@@ -83,21 +83,22 @@ void message_clean(message_t *message, bool clean)
 	if (message->mode != -1)
 	{
 		mq_close(message->mode);
-		mq_unlink(message->file_mode);
+		
+		if (clean)
+			mq_unlink(message->file_mode);
 	}
 		
 	if (message->status != -1)
 	{
 		mq_close(message->status);
-		mq_unlink(message->file_status);
+		
+		if (clean)
+			mq_unlink(message->file_status);
 	}
 	
-	if (clean)
-	{
-		if (message->file_mode != NULL)
-			free(message->file_mode);
+	if (message->file_mode != NULL)
+		free(message->file_mode);
 		
-		if (message->file_status != NULL)
-			free(message->file_status);
-	}
+	if (message->file_status != NULL)
+		free(message->file_status);
 }
